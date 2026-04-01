@@ -35,6 +35,45 @@ start:
    sta VERA_ctrl
 
    ; ------------------------------------------------------------------
+   ; Clear the screen to black (colour index 0).
+   ;
+   ; Use VERA auto-increment (stride 1) to stream 76 800 zero bytes
+   ; (320 × 240) into VRAM starting at $00000.
+   ; 76 800 = 300 pages of 256 bytes; outer counter is 16-bit ($012C).
+   ; ------------------------------------------------------------------
+   lda #$10             ; bank 0, stride 1 (auto-increment each write)
+   sta VERA_addr_bank
+   lda #0
+   sta VERA_addr_high
+   sta VERA_addr_low
+
+   lda #$01             ; outer count high byte  (300 = $012C)
+   sta cnt_hi
+   lda #$2C             ; outer count low  byte
+   sta cnt_lo
+
+clear_outer:
+   ldy #0               ; inner counter: 256 bytes per page
+clear_inner:
+   lda #0
+   sta VERA_data0       ; write black pixel; VERA auto-advances address
+   dey
+   bne clear_inner
+
+   ; decrement 16-bit outer counter
+   lda cnt_lo
+   bne :+
+   dec cnt_hi
+:  dec cnt_lo
+   lda cnt_lo
+   ora cnt_hi
+   bne clear_outer
+
+   ; Restore VERA_ctrl (clear ADDRSEL / DCSEL) after auto-increment use.
+   lda #0
+   sta VERA_ctrl
+
+   ; ------------------------------------------------------------------
    ; Draw a red diagonal line from (0,0) to the screen centre (160,120)
    ; directly into VERA bitmap RAM, bypassing the KERNAL GRAPH_ API.
    ;
