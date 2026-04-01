@@ -30,6 +30,6 @@ x16emu -prg GRAPHIC.PRG -run
 ## Tools & Environment
 
 - **Assembler:** ca65 / cl65 (part of the cc65 toolchain)
-- **Target:** Commander X16 (ROM R38)
+- **Target:** Commander X16 (ROM R49)
 - **Emulator:** x16emu
 - **Language:** 6502 Assembly
